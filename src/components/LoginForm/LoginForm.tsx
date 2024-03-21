@@ -4,10 +4,16 @@ import * as Yup from "yup";
 import { Link, Navigate, useNavigate } from "react-router-dom";
 import { loginApi } from "../../services/user-services";
 import { toast } from "react-toastify";
-import { FormData } from "../../interfaces/login-interface";
 import "./loginForm.css";
 import { FaUser, FaLock } from "react-icons/fa";
 import { AiOutlineLoading3Quarters } from "react-icons/ai";
+
+import { loginValidation } from "../../utils/validate-utils";
+
+const initialValues = {
+    email: "",
+    password: "",
+};
 
 const LoginForm = () => {
     const navigate = useNavigate();
@@ -19,28 +25,8 @@ const LoginForm = () => {
     const [loadingIcon, setLoadingIcon] = useState(false);
 
     const formik = useFormik({
-        initialValues: {
-            email: "",
-            password: "",
-        },
-        validationSchema: Yup.object({
-            email: Yup.string()
-                .required("Email is required")
-                .matches(
-                    /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/,
-                    "Please enter a valid email address"
-                ),
-            password: Yup.string()
-                .required("Password is required")
-                .matches(
-                    /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/,
-                    "Minimum eight characters, at least one uppercase letter, one lowercase letter, one number and one special character"
-                ),
-            toggle: Yup.bool().oneOf(
-                [true],
-                "You need to accept the terms and conditions"
-            ),
-        }),
+        initialValues: initialValues,
+        validationSchema: loginValidation,
         onSubmit: (values) => {
             console.log("Form submitted:", values);
         },
@@ -159,7 +145,7 @@ const LoginForm = () => {
                     <div className="login__register-link">
                         <p className="login__desc">
                             Don't have an account?{" "}
-                            <Link to={"/register"} className="login__register">
+                            <Link to={"/sign-up"} className="login__register">
                                 Register
                             </Link>
                         </p>
