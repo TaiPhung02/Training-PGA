@@ -35,10 +35,10 @@ export const signupValidation = Yup.object({
     confirmPassword: Yup.string()
         .required("Required")
         .oneOf([Yup.ref("password"), null], "Password must match"),
-    username: Yup.string()
+    userName: Yup.string()
         .required("Username is required")
         .min(4, "Must be 4 characters or more"),
-    selectGender: Yup.string().required("Gender is required"),
-    selectCountry: Yup.string().required("Country is required"),
-    selectCity: Yup.string().required("City is required"),
+    selectedGender: Yup.string().required("Gender is required"),
+    selectedCountry: Yup.string().required("Country is required"),
+    selectedCity: Yup.string().required("City is required"),
 });

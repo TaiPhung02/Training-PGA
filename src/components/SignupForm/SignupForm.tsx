@@ -1,20 +1,20 @@
+import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import axios from "axios";
 
 import { useFormik } from "formik";
 
-import "./signupForm.css";
 import { signupValidation } from "../../utils/validate-utils";
-import { useEffect, useState } from "react";
-import axios from "axios";
+import "./signupForm.css";
 
 const initialValues = {
     email: "",
     password: "",
     confirmPassword: "",
-    username: "",
-    selectGender: "",
-    selectCountry: "",
-    selectCity: "",
+    userName: "",
+    selectedGender: "",
+    selectedCountry: "",
+    selectedCity: "",
 };
 
 const SignupForm = () => {
@@ -38,11 +38,11 @@ const SignupForm = () => {
 
     console.log(formik.errors);
 
-    const fetchRecords = () => {
-        axios
-            .get(`http://api.training.div3.pgtest.co/api/v1/location`)
+    const fetchData = async () => {
+        await axios
+            .get("http://api.training.div3.pgtest.co/api/v1/location")
             .then((res) => {
-                setCountries(res.data);
+                setCountries(res.data.data);
             })
             .catch((err) => {
                 console.error("Error fetching countries:", err);
@@ -50,18 +50,17 @@ const SignupForm = () => {
     };
 
     useEffect(() => {
-        fetchRecords;
+        fetchData();
     }, []);
 
     useEffect(() => {
-        // Gọi API để lấy danh sách thành phố dựa trên quốc gia đã chọn
         if (selectedCountry) {
             axios
                 .get(
-                    `http://api.training.div3.pgtest.co/api/v1/location?pid/${selectedCountry}`
+                    `http://api.training.div3.pgtest.co/api/v1/location?pid=${selectedCountry}`
                 )
                 .then((response) => {
-                    setCities(response.data); // Cập nhật state cities
+                    setCities(response.data.data);
                 })
                 .catch((error) => {
                     console.error("Error fetching cities:", error);
@@ -69,12 +68,12 @@ const SignupForm = () => {
         }
     }, [selectedCountry]);
 
-    const handleCountryChange = (event) => {
-        setSelectedCountry(event.target.value);
+    const handleCountryChange = (e) => {
+        setSelectedCountry(e.target.value);
     };
 
-    const handleCityChange = (event) => {
-        setSelectedCity(event.target.value);
+    const handleCityChange = (e) => {
+        setSelectedCity(e.target.value);
     };
 
     return (
@@ -140,17 +139,17 @@ const SignupForm = () => {
                     <div className="sign-up__input-box">
                         <input
                             type="text"
-                            name="username"
-                            placeholder="Username"
+                            name="userName"
+                            placeholder="UserName"
                             className="sign-up__input"
                             required
-                            value={formik.values.username}
+                            value={formik.values.userName}
                             onChange={formik.handleChange}
                         />
                     </div>
-                    {formik.errors.username && (
+                    {formik.errors.userName && (
                         <p className="sign-up__message-error">
-                            {formik.errors.username}
+                            {formik.errors.userName}
                         </p>
                     )}
                     <div className="sign-up__input-box custom-select">
@@ -167,14 +166,14 @@ const SignupForm = () => {
                             <option value="female">Female</option>
                         </select>
                     </div>
-                    {formik.errors.selectGender && (
+                    {formik.errors.selectedGender && (
                         <p className="sign-up__message-error">
-                            {formik.errors.selectGender}
+                            {formik.errors.selectedGender}
                         </p>
                     )}
                     <div className="sign-up__input-box custom-select">
                         <select
-                            name="selectCountry"
+                            name="selectedCountry"
                             className="sign-up__select-box"
                             // defaultValue="0"
                             value={selectedCountry}
@@ -190,14 +189,14 @@ const SignupForm = () => {
                             ))}
                         </select>
                     </div>
-                    {formik.errors.selectCountry && (
+                    {formik.errors.selectedCountry && (
                         <p className="sign-up__message-error">
-                            {formik.errors.selectCountry}
+                            {formik.errors.selectedCountry}
                         </p>
                     )}
                     <div className="sign-up__input-box custom-select">
                         <select
-                            name="selectCity"
+                            name="selectedCity"
                             className="sign-up__select-box"
                             // defaultValue="0"
                             value={selectedCity}
@@ -213,9 +212,9 @@ const SignupForm = () => {
                             ))}
                         </select>
                     </div>
-                    {formik.errors.selectCity && (
+                    {formik.errors.selectedCity && (
                         <p className="sign-up__message-error">
-                            {formik.errors.selectCity}
+                            {formik.errors.selectedCity}
                         </p>
                     )}
                     <button
