@@ -1,10 +1,9 @@
-import axios from "axios";
+import * as axios from "axios";
 import axios from "./customize-axios";
-import { FormData } from "../interfaces/login-interface";
+import location from "./customize-axios";
 
 const loginApi = (email, password) => {
-    // return axios.post("/api/login", { email, password });
-    return axios.post("/api/authentication/login", { email, password });
+    return axios.post("/api/login", { email, password });
 };
 
 export { loginApi };

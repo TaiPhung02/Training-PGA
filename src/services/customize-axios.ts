@@ -1,8 +1,8 @@
 import axios from "axios";
 
 const instance = axios.create({
-    // baseURL: "https://reqres.in",
-    baseURL: "https://api.gearfocus.div4.pgtest.co",
+    baseURL: "https://reqres.in",
+    // baseURL: "https://api.gearfocus.div4.pgtest.co",
 });
 
 instance.interceptors.response.use(
