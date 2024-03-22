@@ -1,16 +1,20 @@
+import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import axios from "axios";
 
 import { useFormik } from "formik";
 
-import "./signupForm.css";
 import { signupValidation } from "../../utils/validate-utils";
+import "./signupForm.css";
 
 const initialValues = {
     email: "",
     password: "",
     confirmPassword: "",
-    username: "",
-    selectField: "",
+    userName: "",
+    selectedGender: "",
+    selectedCountry: "",
+    selectedCity: "",
 };
 
 const SignupForm = () => {
@@ -18,6 +22,11 @@ const SignupForm = () => {
     // const [password, setPassword] = useState("");
     // const [confirmPassword, setConfirmPassword] = useState("");
     // const [userName, setUserName] = useState("");
+
+    const [countries, setCountries] = useState([]);
+    const [cities, setCities] = useState([]);
+    const [selectedCountry, setSelectedCountry] = useState("");
+    const [selectedCity, setSelectedCity] = useState("");
 
     const formik = useFormik({
         initialValues: initialValues,
@@ -28,6 +37,44 @@ const SignupForm = () => {
     });
 
     console.log(formik.errors);
+
+    const fetchData = async () => {
+        await axios
+            .get("http://api.training.div3.pgtest.co/api/v1/location")
+            .then((res) => {
+                setCountries(res.data.data);
+            })
+            .catch((err) => {
+                console.error("Error fetching countries:", err);
+            });
+    };
+
+    useEffect(() => {
+        fetchData();
+    }, []);
+
+    useEffect(() => {
+        if (selectedCountry) {
+            axios
+                .get(
+                    `http://api.training.div3.pgtest.co/api/v1/location?pid=${selectedCountry}`
+                )
+                .then((response) => {
+                    setCities(response.data.data);
+                })
+                .catch((error) => {
+                    console.error("Error fetching cities:", error);
+                });
+        }
+    }, [selectedCountry]);
+
+    const handleCountryChange = (e) => {
+        setSelectedCountry(e.target.value);
+    };
+
+    const handleCityChange = (e) => {
+        setSelectedCity(e.target.value);
+    };
 
     return (
         <>
@@ -92,61 +139,82 @@ const SignupForm = () => {
                     <div className="sign-up__input-box">
                         <input
                             type="text"
-                            name="username"
-                            placeholder="Username"
+                            name="userName"
+                            placeholder="UserName"
                             className="sign-up__input"
                             required
-                            value={formik.values.username}
+                            value={formik.values.userName}
                             onChange={formik.handleChange}
                         />
                     </div>
-                    {formik.errors.username && (
+                    {formik.errors.userName && (
                         <p className="sign-up__message-error">
-                            {formik.errors.username}
+                            {formik.errors.userName}
                         </p>
                     )}
                     <div className="sign-up__input-box custom-select">
-                        <select name="sex" className="sign-up__select-box">
-                            <option value="" selected disabled hidden>
+                        <select
+                            name="selectGender"
+                            className="sign-up__select-box"
+                            // value={formik.values.selectGender}
+                            defaultValue="0"
+                        >
+                            <option value="0" disabled hidden>
                                 -- Select Gender --
                             </option>
                             <option value="male">Male</option>
                             <option value="female">Female</option>
                         </select>
                     </div>
-                    {formik.errors.selectField && (
+                    {formik.errors.selectedGender && (
                         <p className="sign-up__message-error">
-                            {formik.errors.selectField}
+                            {formik.errors.selectedGender}
                         </p>
                     )}
                     <div className="sign-up__input-box custom-select">
-                        <select name="country" className="sign-up__select-box">
-                            <option value="" selected disabled hidden>
+                        <select
+                            name="selectedCountry"
+                            className="sign-up__select-box"
+                            // defaultValue="0"
+                            value={selectedCountry}
+                            onChange={handleCountryChange}
+                        >
+                            <option value="0" disabled hidden>
                                 -- Select Country --
                             </option>
-                            <option value="apple">Apple</option>
-                            <option value="banana">Banana</option>
-                            <option value="orange">Orange</option>
+                            {countries.map((country) => (
+                                <option key={country.id} value={country.id}>
+                                    {country.name}
+                                </option>
+                            ))}
                         </select>
                     </div>
-                    {formik.errors.selectField && (
+                    {formik.errors.selectedCountry && (
                         <p className="sign-up__message-error">
-                            {formik.errors.selectField}
+                            {formik.errors.selectedCountry}
                         </p>
                     )}
                     <div className="sign-up__input-box custom-select">
-                        <select name="city" className="sign-up__select-box">
-                            <option value="" selected disabled hidden>
+                        <select
+                            name="selectedCity"
+                            className="sign-up__select-box"
+                            // defaultValue="0"
+                            value={selectedCity}
+                            onChange={handleCityChange}
+                        >
+                            <option value="0" disabled hidden>
                                 -- Select City --
                             </option>
-                            <option value="apple">Apple</option>
-                            <option value="banana">Banana</option>
-                            <option value="orange">Orange</option>
+                            {cities.map((city) => (
+                                <option key={city.id} value={city.id}>
+                                    {city.name}
+                                </option>
+                            ))}
                         </select>
                     </div>
-                    {formik.errors.selectField && (
+                    {formik.errors.selectedCity && (
                         <p className="sign-up__message-error">
-                            {formik.errors.selectField}
+                            {formik.errors.selectedCity}
                         </p>
                     )}
                     <button
