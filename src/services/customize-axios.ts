@@ -1,8 +1,11 @@
 import axios from "axios";
 
-const instance = axios.create({
-    baseURL: "https://reqres.in",
-    // baseURL: "https://api.gearfocus.div4.pgtest.co",
+export const instance = axios.create({
+    baseURL: "https://reqres.in/api/",
+});
+
+export const location = axios.create({
+    baseURL: "http://api.training.div3.pgtest.co/api/v1/",
 });
 
 instance.interceptors.response.use(
@@ -35,4 +38,4 @@ instance.interceptors.response.use(
     }
 );
 
-export default instance;
+// export { instance, location };

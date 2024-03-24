@@ -1,10 +1,18 @@
 import React, { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, Navigate, useNavigate } from "react-router-dom";
 import axios from "axios";
+import { SignupApi } from "../../services/user-services";
+import { countryApi, cityApi } from "../../services/user-services";
 
 import { useFormik } from "formik";
-
+import { toast } from "react-toastify";
+import { AiOutlineLoading3Quarters } from "react-icons/ai";
 import { signupValidation } from "../../utils/validate-utils";
+import {
+    ICountry,
+    ICity,
+    IGetResponse,
+} from "../../interfaces/signup-interface";
 import "./signupForm.css";
 
 const initialValues = {
@@ -17,16 +25,30 @@ const initialValues = {
     selectedCity: "",
 };
 
-const SignupForm = () => {
-    // const [email, setEmail] = useState("");
-    // const [password, setPassword] = useState("");
-    // const [confirmPassword, setConfirmPassword] = useState("");
-    // const [userName, setUserName] = useState("");
+const fetchData = async (setCountries, setCities, selectedCountry) => {
+    try {
+        const countriesRes = await countryApi();
+        setCountries(countriesRes.data.data);
 
+        if (selectedCountry) {
+            const citiesRes = await cityApi(selectedCountry);
+            setCities(citiesRes.data.data);
+        }
+    } catch (error) {
+        console.error("Error fetching data:", error);
+    }
+};
+
+const SignupForm = () => {
     const [countries, setCountries] = useState([]);
     const [cities, setCities] = useState([]);
     const [selectedCountry, setSelectedCountry] = useState("");
     const [selectedCity, setSelectedCity] = useState("");
+
+    const navigate = useNavigate();
+    const [isNav, setIsNav] = useState(false);
+
+    const [loadingIcon, setLoadingIcon] = useState(false);
 
     const formik = useFormik({
         initialValues: initialValues,
@@ -36,48 +58,54 @@ const SignupForm = () => {
         },
     });
 
-    console.log(formik.errors);
-
-    const fetchData = async () => {
-        await axios
-            .get("http://api.training.div3.pgtest.co/api/v1/location")
-            .then((res) => {
-                setCountries(res.data.data);
-            })
-            .catch((err) => {
-                console.error("Error fetching countries:", err);
-            });
-    };
-
     useEffect(() => {
-        fetchData();
-    }, []);
-
-    useEffect(() => {
-        if (selectedCountry) {
-            axios
-                .get(
-                    `http://api.training.div3.pgtest.co/api/v1/location?pid=${selectedCountry}`
-                )
-                .then((response) => {
-                    setCities(response.data.data);
-                })
-                .catch((error) => {
-                    console.error("Error fetching cities:", error);
-                });
-        }
+        fetchData(setCountries, setCities, selectedCountry);
     }, [selectedCountry]);
 
     const handleCountryChange = (e) => {
-        setSelectedCountry(e.target.value);
+        const selectedCountry = e.target.value;
+        formik.setFieldValue("selectedCountry", selectedCountry);
+        setSelectedCountry(selectedCountry);
     };
 
     const handleCityChange = (e) => {
-        setSelectedCity(e.target.value);
+        const selectedCity = e.target.value;
+        formik.setFieldValue("selectedCity", selectedCity);
+        setSelectedCity(selectedCity);
+    };
+
+    const handleSignup = async () => {
+        setLoadingIcon(true);
+
+        const res = await SignupApi(
+            formik.values.email,
+            formik.values.password,
+            formik.values.confirmPassword,
+            formik.values.userName,
+            formik.values.selectedGender,
+            formik.values.selectedCountry,
+            formik.values.selectedCity
+        );
+        if (res && res.token) {
+            localStorage.setItem("token", res.token);
+            console.log("Token: ", res.token);
+            setIsNav(true);
+            toast.success("Signup in successfully");
+            navigate("/login");
+        } else {
+            if (res && res.status === 400) {
+                console.log(res);
+                toast.error(res.data.error);
+            }
+        }
+
+        setLoadingIcon(false);
     };
 
     return (
         <>
+            {isNav && <Navigate to="/login"></Navigate>}
+
             <div className="sign-up-wrapper">
                 <form
                     action=""
@@ -92,7 +120,6 @@ const SignupForm = () => {
                             name="email"
                             placeholder="Email"
                             className="sign-up__input"
-                            required
                             value={formik.values.email}
                             onChange={formik.handleChange}
                         />
@@ -109,7 +136,6 @@ const SignupForm = () => {
                             placeholder="Password"
                             autoComplete="on"
                             className="sign-up__input"
-                            required
                             value={formik.values.password}
                             onChange={formik.handleChange}
                         />
@@ -126,7 +152,6 @@ const SignupForm = () => {
                             placeholder="Confirm Password"
                             autoComplete="on"
                             className="sign-up__input"
-                            required
                             value={formik.values.confirmPassword}
                             onChange={formik.handleChange}
                         />
@@ -142,7 +167,6 @@ const SignupForm = () => {
                             name="userName"
                             placeholder="UserName"
                             className="sign-up__input"
-                            required
                             value={formik.values.userName}
                             onChange={formik.handleChange}
                         />
@@ -154,12 +178,12 @@ const SignupForm = () => {
                     )}
                     <div className="sign-up__input-box custom-select">
                         <select
-                            name="selectGender"
+                            name="selectedGender"
                             className="sign-up__select-box"
-                            // value={formik.values.selectGender}
-                            defaultValue="0"
+                            value={formik.values.selectedGender}
+                            onChange={formik.handleChange}
                         >
-                            <option value="0" disabled hidden>
+                            <option value="" disabled hidden>
                                 -- Select Gender --
                             </option>
                             <option value="male">Male</option>
@@ -175,11 +199,10 @@ const SignupForm = () => {
                         <select
                             name="selectedCountry"
                             className="sign-up__select-box"
-                            // defaultValue="0"
                             value={selectedCountry}
                             onChange={handleCountryChange}
                         >
-                            <option value="0" disabled hidden>
+                            <option value="" disabled hidden>
                                 -- Select Country --
                             </option>
                             {countries.map((country) => (
@@ -198,11 +221,10 @@ const SignupForm = () => {
                         <select
                             name="selectedCity"
                             className="sign-up__select-box"
-                            // defaultValue="0"
                             value={selectedCity}
                             onChange={handleCityChange}
                         >
-                            <option value="0" disabled hidden>
+                            <option value="" disabled hidden>
                                 -- Select City --
                             </option>
                             {cities.map((city) => (
@@ -220,7 +242,13 @@ const SignupForm = () => {
                     <button
                         type="submit"
                         className="sign-up__btn sign-up-active"
+                        onClick={() => {
+                            handleSignup();
+                        }}
                     >
+                        {loadingIcon && (
+                            <AiOutlineLoading3Quarters className="loaderIcon" />
+                        )}
                         Sign Up
                     </button>
                     <div className="sign-up__register-link">
