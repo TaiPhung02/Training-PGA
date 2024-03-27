@@ -1,0 +1,208 @@
+import React, { useEffect, useState } from "react";
+
+import { Space, Table, Tag } from "antd";
+import { DeleteOutlined } from "@ant-design/icons";
+import { Button, Select, DatePicker, Input } from "antd";
+
+import { getProductApi, deleteProductApi } from "../../services/user-services";
+
+import { toast } from "react-toastify";
+import { debounce } from "lodash";
+
+const { Option } = Select;
+const { RangePicker } = DatePicker;
+
+import "./tableForm.css";
+import AddNewProduct from "../../pages/AddNewProduct/AddNewProduct";
+import EditProduct from "../../pages/EditProduct/EditProduct";
+
+const { Column } = Table;
+
+interface DataType {
+    key: React.Key;
+    status: string;
+    createdAt: string;
+    client: string;
+    currency: string;
+    total: number;
+    invoice: string;
+}
+
+const TableForm = () => {
+    const [products, setProducts] = useState([]);
+
+    const fetchData = async () => {
+        try {
+            const response = await getProductApi();
+            const productsWithKeys = response.data.map((product) => ({
+                ...product,
+                key: product.id,
+            }));
+            setProducts(productsWithKeys);
+        } catch (error) {
+            console.error("Error fetching data:", error);
+        }
+    };
+
+    useEffect(() => {
+        fetchData();
+    }, []);
+
+    const handleApply = () => {
+        console.log("Applied filters");
+    };
+
+    const handleClear = () => {
+        console.log("Cleared filters");
+    };
+
+    const handleDeleteProduct = async (productId: number) => {
+        try {
+            await deleteProductApi(productId);
+            setProducts(
+                products.filter((product) => product.key !== productId)
+            );
+            toast.success(`Product with id ${productId} deleted successfully.`);
+        } catch (error) {
+            console.error(
+                `Error deleting product with id ${productId}:`,
+                error
+            );
+        }
+    };
+
+    const handleSearchInvoice = debounce((e) => {
+        const term = e.target.value.trim();
+
+        if (term) {
+            console.log(term);
+            setProducts(products.filter((item) => item.invoice.includes(term)));
+        } else {
+            fetchData();
+        }
+    }, 300);
+
+    const handleSearchStatus = async (value) => {
+        if (value === "all") {
+            try {
+                fetchData();
+            } catch (error) {
+                console.error("Error fetching data:", error);
+            }
+        } else {
+            setProducts(
+                products.filter(
+                    (item) => item.status.toUpperCase() === value.toUpperCase()
+                )
+            );
+        }
+    };
+
+    return (
+        <>
+            <div className="tableForm__filter">
+                <Select
+                    defaultValue="Status"
+                    className="tableForm__filter-select"
+                    onChange={handleSearchStatus}
+                >
+                    <Option value="processing">PROCESSING</Option>
+                    <Option value="fulfilled">FULFILLED</Option>
+                    <Option value="pending">PENDING</Option>
+                    <Option value="received">RECEIVED</Option>
+                    <Option value="all">ALL</Option>
+                </Select>
+                <Select
+                    defaultValue="Client"
+                    className="tableForm__filter-select"
+                >
+                    <Option value="yopmail">Yopmail</Option>
+                    <Option value="powergate">Powergate</Option>
+                </Select>
+                <RangePicker className="tableForm__filter-date" />
+
+                <Input
+                    placeholder="Invoice #"
+                    className="tableForm__filter-input"
+                    onChange={handleSearchInvoice}
+                />
+
+                <div className="tableForm__filter-cta">
+                    <Button
+                        type="primary"
+                        className="filter-cta__apply"
+                        onClick={handleApply}
+                    >
+                        Apply
+                    </Button>
+                    <Button className="filter-cta__clear" onClick={handleClear}>
+                        Clear
+                    </Button>
+
+                    <AddNewProduct fetchData={fetchData}></AddNewProduct>
+                </div>
+            </div>
+
+            <Table dataSource={products}>
+                <Column
+                    title="Status"
+                    dataIndex="status"
+                    key="status"
+                    render={(status: string) => {
+                        let color;
+                        if (status === "PROCESSING") {
+                            color = "orange";
+                        }
+                        if (status === "FULFILLED") {
+                            color = "green";
+                        }
+                        if (status === "PENDING") {
+                            color = "grey";
+                        }
+                        if (status === "RECEIVED") {
+                            color = "blue";
+                        }
+
+                        return (
+                            <Tag color={color} key={status}>
+                                {status.toUpperCase()}
+                            </Tag>
+                        );
+                    }}
+                />
+
+                <Column title="Date" dataIndex="createdAt" key="createdAt" />
+                <Column title="Client" dataIndex="client" key="client" />
+                <Column title="Currency" dataIndex="currency" key="currency" />
+                <Column title="Total" dataIndex="total" key="total" />
+                <Column title="Invoice #" dataIndex="invoice" key="invoice" />
+
+                <Column
+                    title="Action"
+                    key="action"
+                    render={(_: any, record: DataType) => (
+                        <Space size="middle">
+                            <Button type="primary">View Detail</Button>
+
+                            <EditProduct
+                                record={record}
+                                fetchData={fetchData}
+                            ></EditProduct>
+
+                            <Button
+                                type="primary"
+                                danger
+                                shape="round"
+                                onClick={() => handleDeleteProduct(record.key)}
+                            >
+                                <DeleteOutlined />
+                            </Button>
+                        </Space>
+                    )}
+                />
+            </Table>
+        </>
+    );
+};
+
+export default TableForm;

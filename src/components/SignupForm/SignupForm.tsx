@@ -1,38 +1,34 @@
 import React, { useEffect, useState } from "react";
-import { Link, Navigate, useNavigate } from "react-router-dom";
-import axios from "axios";
-import { SignupApi } from "../../services/user-services";
-import { countryApi, cityApi } from "../../services/user-services";
+import { Link, useNavigate } from "react-router-dom";
+import { singupPGApi, countryApi, cityApi } from "../../services/user-services";
 
 import { useFormik } from "formik";
+import { signupValidation } from "../../utils/validate-utils";
+
 import { toast } from "react-toastify";
 import { AiOutlineLoading3Quarters } from "react-icons/ai";
-import { signupValidation } from "../../utils/validate-utils";
-import {
-    ICountry,
-    ICity,
-    IGetResponse,
-} from "../../interfaces/signup-interface";
+
+
 import "./signupForm.css";
 
 const initialValues = {
     email: "",
     password: "",
-    confirmPassword: "",
-    userName: "",
-    selectedGender: "",
-    selectedCountry: "",
-    selectedCity: "",
+    repeatPassword: "",
+    name: "",
+    gender: "",
+    region: "",
+    state: "",
 };
 
 const fetchData = async (setCountries, setCities, selectedCountry) => {
     try {
         const countriesRes = await countryApi();
-        setCountries(countriesRes.data.data);
+        setCountries(countriesRes.data);
 
         if (selectedCountry) {
             const citiesRes = await cityApi(selectedCountry);
-            setCities(citiesRes.data.data);
+            setCities(citiesRes.data);
         }
     } catch (error) {
         console.error("Error fetching data:", error);
@@ -46,7 +42,6 @@ const SignupForm = () => {
     const [selectedCity, setSelectedCity] = useState("");
 
     const navigate = useNavigate();
-    const [isNav, setIsNav] = useState(false);
 
     const [loadingIcon, setLoadingIcon] = useState(false);
 
@@ -64,38 +59,44 @@ const SignupForm = () => {
 
     const handleCountryChange = (e) => {
         const selectedCountry = e.target.value;
-        formik.setFieldValue("selectedCountry", selectedCountry);
         setSelectedCountry(selectedCountry);
+        formik.setFieldValue("region", selectedCountry);
     };
 
     const handleCityChange = (e) => {
         const selectedCity = e.target.value;
-        formik.setFieldValue("selectedCity", selectedCity);
         setSelectedCity(selectedCity);
+        formik.setFieldValue("state", selectedCity);
     };
 
     const handleSignup = async () => {
         setLoadingIcon(true);
 
-        const res = await SignupApi(
+        const res = await singupPGApi(
             formik.values.email,
             formik.values.password,
-            formik.values.confirmPassword,
-            formik.values.userName,
-            formik.values.selectedGender,
-            formik.values.selectedCountry,
-            formik.values.selectedCity
+            formik.values.repeatPassword,
+            formik.values.name,
+            formik.values.gender,
+            formik.values.region,
+            formik.values.state
         );
-        if (res && res.token) {
-            localStorage.setItem("token", res.token);
-            console.log("Token: ", res.token);
-            setIsNav(true);
+
+        console.log("res:", res);
+
+        if (res && res.data && res.data.token) {
             toast.success("Signup in successfully");
             navigate("/login");
         } else {
-            if (res && res.status === 400) {
+            if (res && res.status === 500) {
                 console.log(res);
-                toast.error(res.data.error);
+                toast.error(res.data.message);
+            } else if (res && res.status === 400) {
+                toast.error(
+                    "Registration is invalid, please check your registration information again"
+                );
+            } else {
+                toast.error("An error occurred, please try again later");
             }
         }
 
@@ -104,8 +105,6 @@ const SignupForm = () => {
 
     return (
         <>
-            {isNav && <Navigate to="/login"></Navigate>}
-
             <div className="sign-up-wrapper">
                 <form
                     action=""
@@ -124,7 +123,7 @@ const SignupForm = () => {
                             onChange={formik.handleChange}
                         />
                     </div>
-                    {formik.errors.email && (
+                    {formik.touched.email && formik.errors.email && (
                         <p className="sign-up__message-error">
                             {formik.errors.email}
                         </p>
@@ -140,7 +139,7 @@ const SignupForm = () => {
                             onChange={formik.handleChange}
                         />
                     </div>
-                    {formik.errors.password && (
+                    {formik.touched.password && formik.errors.password && (
                         <p className="sign-up__message-error">
                             {formik.errors.password}
                         </p>
@@ -148,39 +147,40 @@ const SignupForm = () => {
                     <div className="sign-up__input-box">
                         <input
                             type="password"
-                            name="confirmPassword"
-                            placeholder="Confirm Password"
+                            name="repeatPassword"
+                            placeholder="Repeat Password"
                             autoComplete="on"
                             className="sign-up__input"
-                            value={formik.values.confirmPassword}
+                            value={formik.values.repeatPassword}
                             onChange={formik.handleChange}
                         />
                     </div>
-                    {formik.errors.confirmPassword && (
-                        <p className="sign-up__message-error">
-                            {formik.errors.confirmPassword}
-                        </p>
-                    )}
+                    {formik.touched.repeatPassword &&
+                        formik.errors.repeatPassword && (
+                            <p className="sign-up__message-error">
+                                {formik.errors.repeatPassword}
+                            </p>
+                        )}
                     <div className="sign-up__input-box">
                         <input
                             type="text"
-                            name="userName"
-                            placeholder="UserName"
+                            name="name"
+                            placeholder="Name"
                             className="sign-up__input"
-                            value={formik.values.userName}
+                            value={formik.values.name}
                             onChange={formik.handleChange}
                         />
                     </div>
-                    {formik.errors.userName && (
+                    {formik.touched.name && formik.errors.name && (
                         <p className="sign-up__message-error">
-                            {formik.errors.userName}
+                            {formik.errors.name}
                         </p>
                     )}
                     <div className="sign-up__input-box custom-select">
                         <select
-                            name="selectedGender"
+                            name="gender"
                             className="sign-up__select-box"
-                            value={formik.values.selectedGender}
+                            value={formik.values.gender}
                             onChange={formik.handleChange}
                         >
                             <option value="" disabled hidden>
@@ -190,31 +190,33 @@ const SignupForm = () => {
                             <option value="female">Female</option>
                         </select>
                     </div>
-                    {formik.errors.selectedGender && (
+                    {formik.touched.gender && formik.errors.gender && (
                         <p className="sign-up__message-error">
-                            {formik.errors.selectedGender}
+                            {formik.errors.gender}
                         </p>
                     )}
                     <div className="sign-up__input-box custom-select">
-                        <select
-                            name="selectedCountry"
-                            className="sign-up__select-box"
-                            value={selectedCountry}
-                            onChange={handleCountryChange}
-                        >
-                            <option value="" disabled hidden>
-                                -- Select Country --
-                            </option>
-                            {countries.map((country) => (
-                                <option key={country.id} value={country.id}>
-                                    {country.name}
+                        {countries && countries.length > 0 && (
+                            <select
+                                name="selectedCountry"
+                                className="sign-up__select-box"
+                                value={selectedCountry}
+                                onChange={handleCountryChange}
+                            >
+                                <option value="" disabled hidden>
+                                    -- Select Country --
                                 </option>
-                            ))}
-                        </select>
+                                {countries.map((country) => (
+                                    <option key={country.id} value={country.id}>
+                                        {country.name}
+                                    </option>
+                                ))}
+                            </select>
+                        )}
                     </div>
-                    {formik.errors.selectedCountry && (
+                    {formik.touched.region && formik.errors.region && (
                         <p className="sign-up__message-error">
-                            {formik.errors.selectedCountry}
+                            {formik.errors.region}
                         </p>
                     )}
                     <div className="sign-up__input-box custom-select">
@@ -234,9 +236,9 @@ const SignupForm = () => {
                             ))}
                         </select>
                     </div>
-                    {formik.errors.selectedCity && (
+                    {formik.touched.state && formik.errors.state && (
                         <p className="sign-up__message-error">
-                            {formik.errors.selectedCity}
+                            {formik.errors.state}
                         </p>
                     )}
                     <button

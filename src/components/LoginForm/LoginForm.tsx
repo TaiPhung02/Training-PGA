@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { useFormik } from "formik";
 import * as Yup from "yup";
-import { Link, Navigate, useNavigate } from "react-router-dom";
-import { loginApi } from "../../services/user-services";
+import { Link, useNavigate } from "react-router-dom";
+import { loginApi, loginPGApi } from "../../services/user-services";
 import { toast } from "react-toastify";
 import "./loginForm.css";
 import { FaUser, FaLock } from "react-icons/fa";
@@ -10,18 +10,22 @@ import { AiOutlineLoading3Quarters } from "react-icons/ai";
 
 import { loginValidation } from "../../utils/validate-utils";
 
+import { useDispatch } from "react-redux";
+import {
+    loginStart,
+    loginSuccess,
+    loginFail,
+} from "../../redux/auth/authSlice";
+
 const initialValues = {
     email: "",
     password: "",
 };
 
 const LoginForm = () => {
+    const dispatch = useDispatch();
     const navigate = useNavigate();
 
-    const [isNav, setIsNav] = useState(false);
-
-    const [email, setEmail] = useState("");
-    const [password, setPassword] = useState("");
     const [loadingIcon, setLoadingIcon] = useState(false);
 
     const formik = useFormik({
@@ -33,33 +37,48 @@ const LoginForm = () => {
     });
 
     const handleLogin = async () => {
-        if (!email || !password) {
-            toast.error("Email/Password is required");
-            return;
-        }
+        dispatch(loginStart());
 
-        setLoadingIcon(true);
+        try {
+            setLoadingIcon(true);
+            const res = await loginPGApi(
+                formik.values.email,
+                formik.values.password
+            );
 
-        const res = await loginApi(email, password);
-        if (res && res.token) {
-            localStorage.setItem("token", res.token);
-            console.log("Token: ", res.token);
-            setIsNav(true);
-            toast.success("Logged in successfully");
-            navigate("/");
-        } else {
-            if (res && res.status === 400) {
-                toast.error(res.data.error);
+            if (res && res.data && res.data.token) {
+                console.log(res.data);
+                localStorage.setItem("token", res.data.token);
+                localStorage.setItem("userName", res.data.name);
+                dispatch(loginSuccess(res.data));
+                toast.success("Logged in successfully");
+                navigate("/");
+            } else {
+                dispatch(loginFail("Login failed"));
+                toast.error("Login failed");
             }
-        }
 
-        setLoadingIcon(false);
+            setLoadingIcon(false);
+        } catch (error) {
+            console.error("An error occurred during login: ", error);
+            toast.error("An error occurred during login");
+            dispatch(loginFail("Login failed"));
+            setLoadingIcon(false);
+        }
+    };
+
+    const handleEmailChange = (e) => {
+        const email = e.target.value;
+        formik.setFieldValue("email", email);
+    };
+
+    const handlePasswordChange = (e) => {
+        const password = e.target.value;
+        formik.setFieldValue("password", password);
     };
 
     return (
         <>
-            {isNav && <Navigate to="/"></Navigate>}
-
             <div className="login-wrapper">
                 <form
                     onSubmit={formik.handleSubmit}
@@ -68,19 +87,14 @@ const LoginForm = () => {
                     className="login-form"
                 >
                     <h1 className="login__heading">Login</h1>
-                    <span>(eve.holt@reqres.in)</span>
                     <div className="login__input-box">
                         <input
                             type="text"
                             name="email"
                             placeholder="Email"
                             className="login__input"
-                            required
                             value={formik.values.email}
-                            onChange={(e) => {
-                                formik.handleChange(e);
-                                setEmail(e.target.value);
-                            }}
+                            onChange={handleEmailChange}
                         />
                         <FaUser className="login__input-icon" />
                     </div>
@@ -96,12 +110,8 @@ const LoginForm = () => {
                             placeholder="Password"
                             autoComplete="on"
                             className="login__input"
-                            required
                             value={formik.values.password}
-                            onChange={(e) => {
-                                formik.handleChange(e);
-                                setPassword(e.target.value);
-                            }}
+                            onChange={handlePasswordChange}
                         />
                         <FaLock className="login__input-icon" />
                     </div>
@@ -126,12 +136,16 @@ const LoginForm = () => {
                     <button
                         type="submit"
                         className={
-                            email && password
+                            formik.values.email && formik.values.password
                                 ? "login__btn login-active"
                                 : "login__btn"
                         }
                         disabled={
-                            email && password && formik.isValid ? false : true
+                            formik.values.email &&
+                            formik.values.password &&
+                            formik.isValid
+                                ? false
+                                : true
                         }
                         onClick={() => {
                             handleLogin();
