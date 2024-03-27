@@ -1,11 +1,28 @@
 import axios from "axios";
 
-const instance = axios.create({
-    baseURL: "https://reqres.in",
-    // baseURL: "https://api.gearfocus.div4.pgtest.co",
+export const pgApi = axios.create({
+    baseURL: "http://api.training.div3.pgtest.co/api/v1/",
+    headers: {
+        Authorization: "",
+    },
 });
 
-instance.interceptors.response.use(
+pgApi.interceptors.request.use(
+    function (config) {
+        const token = localStorage.getItem("token") || "";
+
+        if (token) {
+            config.headers.Authorization = token;
+        }
+
+        return config;
+    },
+    function (error) {
+        return Promise.reject(error);
+    }
+);
+
+pgApi.interceptors.response.use(
     function (response) {
         // Any status code that lie within the range of 2xx cause this function to trigger
         // Do something with response data
@@ -34,5 +51,3 @@ instance.interceptors.response.use(
         return Promise.reject(error);
     }
 );
-
-export default instance;

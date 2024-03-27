@@ -1,0 +1,48 @@
+.tableForm__filter {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px;
+}
+
+.tableForm__filter-select {
+    font-size: 16px;
+    width: 200px;
+    margin-right: 10px;
+}
+
+.tableForm__filter-date {
+    font-size: 16px;
+    width: 300px;
+    margin-right: 10px;
+}
+
+.tableForm__filter-input {
+    font-size: 16px;
+    width: 300px;
+    margin-right: 10px;
+}
+
+.tableForm__filter-cta {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.filter-cta__apply,
+.filter-cta__clear {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    padding: 20px;
+    width: 120px;
+    margin-right: 10px;
+}
+
+.filter-cta__add {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
