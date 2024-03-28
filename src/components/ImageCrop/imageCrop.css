@@ -1,0 +1,27 @@
+.imageCrop__input {
+    display: block;
+    padding: 10px 20px;
+    border: 1px solid #ccc;
+    border-radius: 10px;
+}
+
+.imageCrop__error {
+    color: red;
+    font-size: 16px;
+}
+
+.imageCrop__imgSrc {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+}
+
+.imageCrop__canvas {
+    display: "none";
+    margin-top: 10px;
+    border: 1px solid black;
+    object-fit: contain;
+    width: 150px;
+    height: 150px;
+}

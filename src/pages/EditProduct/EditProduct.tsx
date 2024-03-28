@@ -24,6 +24,7 @@ const initialValues = {
 const EditProduct = ({ record, fetchData }) => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isRecordLoaded, setIsRecordLoaded] = useState(false);
+    const [initialRecordValues, setInitialRecordValues] = useState({});
 
     const showModal = () => {
         setIsModalOpen(true);
@@ -79,9 +80,10 @@ const EditProduct = ({ record, fetchData }) => {
 
     const handleCancel = () => {
         setIsModalOpen(false);
+        formik.setValues(initialRecordValues);
     };
 
-    useEffect(() => {
+    const loadRecordData = () => {
         if (record && !isRecordLoaded) {
             formik.setValues({
                 ...formik.values,
@@ -93,13 +95,21 @@ const EditProduct = ({ record, fetchData }) => {
                 client: record.client,
                 invoice: record.invoice,
             });
+            setInitialRecordValues({ ...record });
             setIsRecordLoaded(true);
         }
+    };
+
+    useEffect(() => {
+        loadRecordData();
     }, [record, isRecordLoaded]);
 
     return (
         <>
-            <Button type="primary" onClick={showModal}>
+            <Button
+                style={{ backgroundColor: "#FFC107", color: "#fff" }}
+                onClick={showModal}
+            >
                 <span>Edit</span>
                 <EditOutlined />
             </Button>

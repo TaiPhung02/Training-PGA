@@ -2,20 +2,19 @@ import React, { useEffect, useState } from "react";
 
 import { Space, Table, Tag } from "antd";
 import { DeleteOutlined } from "@ant-design/icons";
-import { Button, Select, DatePicker, Input } from "antd";
+import { Button, Select, DatePicker, Input, Skeleton } from "antd";
 
 import { getProductApi, deleteProductApi } from "../../services/user-services";
 
 import { toast } from "react-toastify";
 import { debounce } from "lodash";
 
-const { Option } = Select;
-const { RangePicker } = DatePicker;
-
-import "./tableForm.css";
 import AddNewProduct from "../../pages/AddNewProduct/AddNewProduct";
 import EditProduct from "../../pages/EditProduct/EditProduct";
+import "./tableForm.css";
 
+const { Option } = Select;
+const { RangePicker } = DatePicker;
 const { Column } = Table;
 
 interface DataType {
@@ -30,6 +29,15 @@ interface DataType {
 
 const TableForm = () => {
     const [products, setProducts] = useState([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            setLoading(false);
+        }, 1000);
+
+        return () => clearTimeout(timer);
+    }, []);
 
     const fetchData = async () => {
         try {
@@ -53,7 +61,10 @@ const TableForm = () => {
     };
 
     const handleClear = () => {
-        console.log("Cleared filters");
+        window.history.pushState({}, "", window.location.pathname);
+
+        toast.success("Cleared filters");
+        fetchData();
     };
 
     const handleDeleteProduct = async (productId: number) => {
@@ -96,12 +107,34 @@ const TableForm = () => {
                 )
             );
         }
+        updateURL({ status: value });
     };
+
+    const updateURL = (searchParams) => {
+        const queryParams = new URLSearchParams(window.location.search);
+        for (const [key, value] of Object.entries(searchParams)) {
+            queryParams.set(key, value);
+        }
+        const newURL = `${window.location.pathname}${
+            queryParams.toString() ? "?" + queryParams.toString() : ""
+        }`;
+        window.history.pushState({}, "", newURL);
+    };
+
+    useEffect(() => {
+        const urlSearchParams = new URLSearchParams(window.location.search);
+        const statusParam = urlSearchParams.get("status");
+
+        if (statusParam) {
+            handleSearchStatus(statusParam);
+        }
+    }, []);
 
     return (
         <>
             <div className="tableForm__filter">
                 <Select
+                    id="status-select"
                     defaultValue="Status"
                     className="tableForm__filter-select"
                     onChange={handleSearchStatus}
@@ -122,6 +155,7 @@ const TableForm = () => {
                 <RangePicker className="tableForm__filter-date" />
 
                 <Input
+                    id="invoice-input"
                     placeholder="Invoice #"
                     className="tableForm__filter-input"
                     onChange={handleSearchInvoice}
@@ -143,64 +177,112 @@ const TableForm = () => {
                 </div>
             </div>
 
-            <Table dataSource={products}>
-                <Column
-                    title="Status"
-                    dataIndex="status"
-                    key="status"
-                    render={(status: string) => {
-                        let color;
-                        if (status === "PROCESSING") {
-                            color = "orange";
-                        }
-                        if (status === "FULFILLED") {
-                            color = "green";
-                        }
-                        if (status === "PENDING") {
-                            color = "grey";
-                        }
-                        if (status === "RECEIVED") {
-                            color = "blue";
-                        }
+            <Skeleton loading={loading} active paragraph={{ rows: 20 }} />
+            {!loading && (
+                <div>
+                    <h1>List Product</h1>
+                    <Table dataSource={products}>
+                        <Column
+                            title="Status"
+                            dataIndex="status"
+                            key="status"
+                            render={(status: string) => {
+                                let color;
+                                if (status === "PROCESSING") {
+                                    color = "orange";
+                                }
+                                if (status === "FULFILLED") {
+                                    color = "green";
+                                }
+                                if (status === "PENDING") {
+                                    color = "grey";
+                                }
+                                if (status === "RECEIVED") {
+                                    color = "blue";
+                                }
 
-                        return (
-                            <Tag color={color} key={status}>
-                                {status.toUpperCase()}
-                            </Tag>
-                        );
-                    }}
-                />
+                                return (
+                                    <Tag color={color} key={status}>
+                                        {status.toUpperCase()}
+                                    </Tag>
+                                );
+                            }}
+                        />
 
-                <Column title="Date" dataIndex="createdAt" key="createdAt" />
-                <Column title="Client" dataIndex="client" key="client" />
-                <Column title="Currency" dataIndex="currency" key="currency" />
-                <Column title="Total" dataIndex="total" key="total" />
-                <Column title="Invoice #" dataIndex="invoice" key="invoice" />
+                        <Column
+                            title="Date"
+                            dataIndex="createdAt"
+                            key="createdAt"
+                        />
+                        <Column
+                            title="Client"
+                            dataIndex="client"
+                            key="client"
+                        />
+                        <Column
+                            title="Currency"
+                            dataIndex="currency"
+                            key="currency"
+                        />
+                        <Column
+                            title="Total"
+                            dataIndex="total"
+                            key="total"
+                            render={(total: number) => (
+                                <p>
+                                    {Number(total).toLocaleString("vi", {
+                                        style: "currency",
+                                        currency: "VND",
+                                    })}
+                                </p>
+                            )}
+                            sortOrder="descend"
+                        />
+                        <Column
+                            title="Invoice #"
+                            dataIndex="invoice"
+                            key="invoice"
+                        />
 
-                <Column
-                    title="Action"
-                    key="action"
-                    render={(_: any, record: DataType) => (
-                        <Space size="middle">
-                            <Button type="primary">View Detail</Button>
+                        <Column
+                            title="Action"
+                            key="action"
+                            render={(_: any, record: DataType) => (
+                                <Space size="middle">
+                                    <Button
+                                        style={{
+                                            backgroundColor: "#2196F3",
+                                            color: "#fff",
+                                        }}
+                                        type="primary"
+                                    >
+                                        View Detail
+                                    </Button>
 
-                            <EditProduct
-                                record={record}
-                                fetchData={fetchData}
-                            ></EditProduct>
+                                    <EditProduct
+                                        record={record}
+                                        fetchData={fetchData}
+                                    ></EditProduct>
 
-                            <Button
-                                type="primary"
-                                danger
-                                shape="round"
-                                onClick={() => handleDeleteProduct(record.key)}
-                            >
-                                <DeleteOutlined />
-                            </Button>
-                        </Space>
-                    )}
-                />
-            </Table>
+                                    <Button
+                                        style={{
+                                            backgroundColor: "#F44336",
+                                            color: "#fff",
+                                        }}
+                                        danger
+                                        shape="round"
+                                        onClick={() =>
+                                            handleDeleteProduct(record.key)
+                                        }
+                                    >
+                                        <DeleteOutlined />
+                                    </Button>
+                                </Space>
+                            )}
+                        />
+                    </Table>
+                </div>
+            )}
         </>
     );
 };

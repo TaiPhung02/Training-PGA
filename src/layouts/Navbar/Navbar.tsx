@@ -10,7 +10,11 @@ import "./navbar.css";
 const items: MenuProps["items"] = [
     {
         key: "1",
-        label: <Link to={"/profile"}>Profile</Link>,
+        label: (
+            <Link style={{ fontSize: "16px" }} to={"/profile"}>
+                Profile
+            </Link>
+        ),
         icon: <SmileOutlined />,
     },
     {
@@ -24,8 +28,6 @@ const items: MenuProps["items"] = [
 ];
 
 const Navbar = () => {
-    // const user = useSelector((state) => state.auth.user);
-
     return (
         <div className="navbar">
             <Link to={"/"} className="navbar__profile">
@@ -40,17 +42,6 @@ const Navbar = () => {
                     </Space>
                 </a>
             </Dropdown>
-
-            {/* {user && (
-                <div>
-                    <p>Name: {user.name}</p>
-                    <p>Email: {user.email}</p>
-                    <p>Description: {user.description}</p>
-                    <p>Country: {user.region}</p>
-                    <p>City: {user.state}</p>
-
-                </div>
-            )} */}
         </div>
     );
 };

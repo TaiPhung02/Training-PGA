@@ -12,7 +12,7 @@ import { addProductApi } from "../../services/user-services";
 import "./addNewProduct.css";
 
 const initialValues = {
-    status: "",
+    status: "STATUS",
     currency: "",
     fundingMethod: "",
     total: "",
@@ -70,7 +70,10 @@ const AddNewProduct = ({ fetchData }) => {
 
     return (
         <>
-            <Button type="primary" onClick={showModal}>
+            <Button
+                style={{ backgroundColor: "#4CAF50", color: "#fff" }}
+                onClick={showModal}
+            >
                 <span>Add New Product</span>
                 <PlusOutlined />
             </Button>
@@ -84,6 +87,7 @@ const AddNewProduct = ({ fetchData }) => {
                     <Select
                         value={formik.values.status}
                         onChange={handleSelectChange}
+                        onBlur={formik.handleBlur}
                     >
                         <Select.Option value="PROCESSING">
                             PROCESSING
@@ -95,6 +99,11 @@ const AddNewProduct = ({ fetchData }) => {
                         <Select.Option value="PENDING">PENDING</Select.Option>
                     </Select>
                 </Form.Item>
+                {formik.touched.status && formik.errors.status && (
+                    <p className="add-product__message-error">
+                        {formik.errors.status}
+                    </p>
+                )}
 
                 {/* <Form.Item label="Date">
                     <DatePicker />
@@ -105,6 +114,7 @@ const AddNewProduct = ({ fetchData }) => {
                         name="currency"
                         value={formik.values.currency}
                         onChange={formik.handleChange}
+                        onBlur={formik.handleBlur}
                     />
                 </Form.Item>
                 {formik.touched.currency && formik.errors.currency && (
@@ -117,6 +127,7 @@ const AddNewProduct = ({ fetchData }) => {
                         name="fundingMethod"
                         value={formik.values.fundingMethod}
                         onChange={formik.handleChange}
+                        onBlur={formik.handleBlur}
                     />
                 </Form.Item>
                 {formik.touched.fundingMethod &&
@@ -130,6 +141,7 @@ const AddNewProduct = ({ fetchData }) => {
                         name="total"
                         value={formik.values.total}
                         onChange={formik.handleChange}
+                        onBlur={formik.handleBlur}
                     />
                 </Form.Item>
                 {formik.touched.total && formik.errors.total && (
@@ -142,6 +154,7 @@ const AddNewProduct = ({ fetchData }) => {
                         name="order"
                         value={formik.values.order}
                         onChange={formik.handleChange}
+                        onBlur={formik.handleBlur}
                     />
                 </Form.Item>
                 {formik.touched.order && formik.errors.order && (
@@ -154,6 +167,7 @@ const AddNewProduct = ({ fetchData }) => {
                         name="client"
                         value={formik.values.client}
                         onChange={formik.handleChange}
+                        onBlur={formik.handleBlur}
                     />
                 </Form.Item>
                 {formik.touched.client && formik.errors.client && (
@@ -167,6 +181,7 @@ const AddNewProduct = ({ fetchData }) => {
                         name="invoice"
                         value={formik.values.invoice}
                         onChange={formik.handleChange}
+                        onBlur={formik.handleBlur}
                     />
                 </Form.Item>
                 {formik.touched.invoice && formik.errors.invoice && (
