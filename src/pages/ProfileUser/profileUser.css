@@ -2,12 +2,24 @@
     display: flex;
     align-items: center;
     justify-content: center;
+    height: 60vh;
+}
+
+.profileUser__loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .profileUser__row {
     display: flex;
     align-items: center;
     justify-content: space-between;
+    width: 650px;
+    padding: 20px;
+    background: #ccc;
+    border-radius: 30px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.35);
 }
 
 .profileUser__image img {
@@ -16,4 +28,18 @@
     object-fit: cover;
     border-radius: 50%;
     cursor: pointer;
+}
+
+.profileUse__name {
+    color: #091156;
+    font-size: 28px;
+    font-weight: 500;
+    line-height: 125%;
+}
+
+.profileUser__desc {
+    color: #8b8b8b;
+    font-size: 18px;
+    font-weight: 400;
+    letter-spacing: 1.6px;
 }

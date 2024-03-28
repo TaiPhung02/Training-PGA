@@ -89,3 +89,7 @@ export const searchProductApi = (productId: number) => {
 export const userApi = () => {
     return pgApi.get("user");
 };
+
+export const updateAvatarApi = (imgData) => {
+    return pgApi.put("user", { imgData });
+};
