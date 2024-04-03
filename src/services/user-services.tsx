@@ -1,18 +1,24 @@
+import { AxiosRequestConfig } from "axios";
 import { pgApi } from "./customize-axios";
+import { ISignupApi } from "../interfaces/signup-interface";
+import {
+    IAddProductApi,
+    IEditProductApi,
+} from "../interfaces/productApi-interface";
 
-export const loginPGApi = (email, password) => {
+export const loginPGApi = (email: string, password: string) => {
     return pgApi.post("auth/login", { email, password });
 };
 
-export const singupPGApi = (
+export const signupPGApi = ({
     email,
     password,
     repeatPassword,
     name,
     gender,
     region,
-    state
-) => {
+    state,
+}: ISignupApi) => {
     return pgApi.post("auth/register", {
         email,
         password,
@@ -36,15 +42,15 @@ export const getProductApi = () => {
     return pgApi.get("product");
 };
 
-export const addProductApi = (
+export const addProductApi = ({
     status,
     currency,
     fundingMethod,
     total,
     order,
     client,
-    invoice
-) => {
+    invoice,
+}: IAddProductApi) => {
     return pgApi.post("product", {
         status,
         currency,
@@ -56,7 +62,7 @@ export const addProductApi = (
     });
 };
 
-export const editProductApi = (
+export const editProductApi = ({
     id,
     status,
     currency,
@@ -64,8 +70,8 @@ export const editProductApi = (
     total,
     order,
     client,
-    invoice
-) => {
+    invoice,
+}: IEditProductApi) => {
     return pgApi.put("product", {
         id,
         status,
@@ -90,6 +96,16 @@ export const userApi = () => {
     return pgApi.get("user");
 };
 
-export const updateAvatarApi = (imgData) => {
-    return pgApi.put("user", { imgData });
+export const updateUser = async (data: any): Promise<any> => {
+    const config: AxiosRequestConfig = {
+        method: "PUT",
+        url: `http://api.training.div3.pgtest.co/api/v1/user`,
+        data: data,
+        headers: {
+            "Content-Type": "multipart/form-data",
+        },
+    };
+
+    const response = await pgApi(config);
+    return response;
 };

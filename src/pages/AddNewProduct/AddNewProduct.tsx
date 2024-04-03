@@ -21,7 +21,11 @@ const initialValues = {
     invoice: "",
 };
 
-const AddNewProduct = ({ fetchData }) => {
+interface AddNewProductProps {
+    fetchData: () => Promise<void>;
+}
+
+const AddNewProduct = ({ fetchData }: AddNewProductProps) => {
     const [isModalOpen, setIsModalOpen] = useState(false);
 
     const showModal = () => {
@@ -41,25 +45,31 @@ const AddNewProduct = ({ fetchData }) => {
     };
 
     const handleOk = async () => {
-        const res = await addProductApi(
-            formik.values.status,
-            formik.values.currency,
-            formik.values.fundingMethod,
-            formik.values.total,
-            formik.values.order,
-            formik.values.client,
-            formik.values.invoice
-        );
+        try {
+            const res = await addProductApi({
+                status: formik.values.status,
+                currency: formik.values.currency,
+                fundingMethod: formik.values.fundingMethod,
+                total: formik.values.total,
+                order: formik.values.order,
+                client: formik.values.client,
+                invoice: formik.values.invoice,
+            });
+            console.log(res);
 
-        if (res && res.code === 200) {
-            formik.handleSubmit();
-            setIsModalOpen(false);
-            fetchData();
-            toast.success("A Product is created succeed!");
+            if (res && res.code === 200) {
+                formik.handleSubmit();
+                setIsModalOpen(false);
+                fetchData();
+                toast.success("A Product is created successfully!");
 
-            formik.resetForm();
-        } else {
-            toast.error("An error occurred, please try again later");
+                formik.resetForm();
+            } else {
+                toast.error("An error occurred, please try again later 1");
+            }
+        } catch (error) {
+            console.error("Error adding product:", error);
+            toast.error("An error occurred, please try again later 2");
         }
     };
 

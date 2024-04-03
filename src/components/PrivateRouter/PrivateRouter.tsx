@@ -1,7 +1,18 @@
+import { ReactNode } from "react";
+import { useSelector } from "react-redux";
 import { Navigate } from "react-router-dom";
+import { RootState } from "../../redux/store";
+import { IUserProfile } from "../../interfaces/user-interface";
 
-export default function PrivateRouter({ children }) {
-    const token = localStorage.getItem("token");
+interface PrivateRouterProps {
+    children: ReactNode;
+}
 
-    return token ? <>{children}</> : <Navigate to="/login" replace />;
+export default function PrivateRouter({ children }: PrivateRouterProps) {
+    // const token = localStorage.getItem("token");
+    const user: IUserProfile = useSelector(
+        (state: RootState) => state.auth.user
+    );
+
+    return user?.token ? <>{children}</> : <Navigate to="/login" replace />;
 }

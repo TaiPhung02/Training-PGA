@@ -17,3 +17,13 @@ export interface IGetResponse {
     setCities: ICity[];
     selectedCountry: string;
 }
+
+export interface ISignupApi {
+    email: string;
+    password: string;
+    repeatPassword: string;
+    name: string;
+    gender: string;
+    region: string;
+    state: string;
+}

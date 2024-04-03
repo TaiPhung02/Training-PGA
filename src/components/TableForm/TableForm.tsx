@@ -12,23 +12,18 @@ import { debounce } from "lodash";
 import AddNewProduct from "../../pages/AddNewProduct/AddNewProduct";
 import EditProduct from "../../pages/EditProduct/EditProduct";
 import "./tableForm.css";
+import {
+    IFilterParams,
+    IKeyProduct,
+    IDataType,
+} from "../../interfaces/table-interface";
 
 const { Option } = Select;
 const { RangePicker } = DatePicker;
 const { Column } = Table;
 
-interface DataType {
-    key: React.Key;
-    status: string;
-    createdAt: string;
-    client: string;
-    currency: string;
-    total: number;
-    invoice: string;
-}
-
 const TableForm = () => {
-    const [products, setProducts] = useState([]);
+    const [products, setProducts] = useState<IKeyProduct[]>([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -42,10 +37,12 @@ const TableForm = () => {
     const fetchData = async () => {
         try {
             const response = await getProductApi();
-            const productsWithKeys = response.data.map((product) => ({
-                ...product,
-                key: product.id,
-            }));
+            const productsWithKeys = response.data.map(
+                (product: IKeyProduct) => ({
+                    ...product,
+                    key: product.id,
+                })
+            );
             setProducts(productsWithKeys);
         } catch (error) {
             console.error("Error fetching data:", error);
@@ -93,7 +90,7 @@ const TableForm = () => {
         }
     }, 300);
 
-    const handleSearchStatus = async (value) => {
+    const handleSearchStatus = async (value: string) => {
         if (value === "all") {
             try {
                 fetchData();
@@ -110,7 +107,7 @@ const TableForm = () => {
         updateURL({ status: value });
     };
 
-    const updateURL = (searchParams) => {
+    const updateURL = (searchParams: IFilterParams) => {
         const queryParams = new URLSearchParams(window.location.search);
         for (const [key, value] of Object.entries(searchParams)) {
             queryParams.set(key, value);
@@ -247,7 +244,7 @@ const TableForm = () => {
                         <Column
                             title="Action"
                             key="action"
-                            render={(_: any, record: DataType) => (
+                            render={(record: IDataType) => (
                                 <Space size="middle">
                                     <Button
                                         style={{
@@ -260,8 +257,8 @@ const TableForm = () => {
                                     </Button>
 
                                     <EditProduct
-                                        record={record}
-                                        fetchData={fetchData}
+                                        record={record as IKeyProduct}
+                                        fetchData={fetchData as () => void}
                                     ></EditProduct>
 
                                     <Button

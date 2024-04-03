@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { singupPGApi, countryApi, cityApi } from "../../services/user-services";
+import { signupPGApi, countryApi, cityApi } from "../../services/user-services";
 
 import { useFormik } from "formik";
 import { signupValidation } from "../../utils/validate-utils";
@@ -8,8 +8,8 @@ import { signupValidation } from "../../utils/validate-utils";
 import { toast } from "react-toastify";
 import { AiOutlineLoading3Quarters } from "react-icons/ai";
 
-
 import "./signupForm.css";
+import { ICity, ICountry } from "../../interfaces/signup-interface";
 
 const initialValues = {
     email: "",
@@ -21,25 +21,11 @@ const initialValues = {
     state: "",
 };
 
-const fetchData = async (setCountries, setCities, selectedCountry) => {
-    try {
-        const countriesRes = await countryApi();
-        setCountries(countriesRes.data);
-
-        if (selectedCountry) {
-            const citiesRes = await cityApi(selectedCountry);
-            setCities(citiesRes.data);
-        }
-    } catch (error) {
-        console.error("Error fetching data:", error);
-    }
-};
-
 const SignupForm = () => {
-    const [countries, setCountries] = useState([]);
-    const [cities, setCities] = useState([]);
-    const [selectedCountry, setSelectedCountry] = useState("");
-    const [selectedCity, setSelectedCity] = useState("");
+    const [countries, setCountries] = useState<ICountry[]>([]);
+    const [cities, setCities] = useState<ICity[]>([]);
+    const [selectedCountry, setSelectedCountry] = useState<string>("");
+    const [selectedCity, setSelectedCity] = useState<string>("");
 
     const navigate = useNavigate();
 
@@ -53,17 +39,35 @@ const SignupForm = () => {
         },
     });
 
+    const fetchData = async (
+        setCountries: React.Dispatch<React.SetStateAction<ICountry[]>>,
+        setCities: React.Dispatch<React.SetStateAction<ICity[]>>,
+        selectedCountry: string
+    ) => {
+        try {
+            const countriesRes = await countryApi();
+            setCountries(countriesRes.data);
+
+            if (selectedCountry) {
+                const citiesRes = await cityApi(selectedCountry);
+                setCities(citiesRes.data);
+            }
+        } catch (error) {
+            console.error("Error fetching data:", error);
+        }
+    };
+
     useEffect(() => {
         fetchData(setCountries, setCities, selectedCountry);
     }, [selectedCountry]);
 
-    const handleCountryChange = (e) => {
+    const handleCountryChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
         const selectedCountry = e.target.value;
         setSelectedCountry(selectedCountry);
         formik.setFieldValue("region", selectedCountry);
     };
 
-    const handleCityChange = (e) => {
+    const handleCityChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
         const selectedCity = e.target.value;
         setSelectedCity(selectedCity);
         formik.setFieldValue("state", selectedCity);
@@ -72,15 +76,15 @@ const SignupForm = () => {
     const handleSignup = async () => {
         setLoadingIcon(true);
 
-        const res = await singupPGApi(
-            formik.values.email,
-            formik.values.password,
-            formik.values.repeatPassword,
-            formik.values.name,
-            formik.values.gender,
-            formik.values.region,
-            formik.values.state
-        );
+        const res = await signupPGApi({
+            email: formik.values.email,
+            password: formik.values.password,
+            repeatPassword: formik.values.repeatPassword,
+            name: formik.values.name,
+            gender: formik.values.gender,
+            region: formik.values.region,
+            state: formik.values.state,
+        });
 
         console.log("res:", res);
 
@@ -121,6 +125,7 @@ const SignupForm = () => {
                             className="sign-up__input"
                             value={formik.values.email}
                             onChange={formik.handleChange}
+                            onBlur={formik.handleBlur}
                         />
                     </div>
                     {formik.touched.email && formik.errors.email && (
@@ -137,6 +142,7 @@ const SignupForm = () => {
                             className="sign-up__input"
                             value={formik.values.password}
                             onChange={formik.handleChange}
+                            onBlur={formik.handleBlur}
                         />
                     </div>
                     {formik.touched.password && formik.errors.password && (
@@ -153,6 +159,7 @@ const SignupForm = () => {
                             className="sign-up__input"
                             value={formik.values.repeatPassword}
                             onChange={formik.handleChange}
+                            onBlur={formik.handleBlur}
                         />
                     </div>
                     {formik.touched.repeatPassword &&
@@ -169,6 +176,7 @@ const SignupForm = () => {
                             className="sign-up__input"
                             value={formik.values.name}
                             onChange={formik.handleChange}
+                            onBlur={formik.handleBlur}
                         />
                     </div>
                     {formik.touched.name && formik.errors.name && (
@@ -176,12 +184,13 @@ const SignupForm = () => {
                             {formik.errors.name}
                         </p>
                     )}
-                    <div className="sign-up__input-box custom-select">
+                    <div className="sign-up__input-box">
                         <select
                             name="gender"
                             className="sign-up__select-box"
                             value={formik.values.gender}
                             onChange={formik.handleChange}
+                            onBlur={formik.handleBlur}
                         >
                             <option value="" disabled hidden>
                                 -- Select Gender --

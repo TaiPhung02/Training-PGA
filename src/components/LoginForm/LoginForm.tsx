@@ -1,8 +1,7 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useFormik } from "formik";
-import * as Yup from "yup";
 import { Link, useNavigate } from "react-router-dom";
-import { loginApi, loginPGApi } from "../../services/user-services";
+import { loginPGApi } from "../../services/user-services";
 import { toast } from "react-toastify";
 import "./loginForm.css";
 import { FaUser, FaLock } from "react-icons/fa";
@@ -16,8 +15,9 @@ import {
     loginSuccess,
     loginFail,
 } from "../../redux/auth/authSlice";
+import { ILoginFormData } from "../../interfaces/login-interface";
 
-const initialValues = {
+const initialValues: ILoginFormData = {
     email: "",
     password: "",
 };
@@ -49,7 +49,7 @@ const LoginForm = () => {
             if (res && res.data && res.data.token) {
                 console.log(res.data);
                 localStorage.setItem("token", res.data.token);
-                localStorage.setItem("userName", res.data.name);
+
                 dispatch(loginSuccess(res.data));
                 toast.success("Logged in successfully");
                 navigate("/");
@@ -67,12 +67,12 @@ const LoginForm = () => {
         }
     };
 
-    const handleEmailChange = (e) => {
+    const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const email = e.target.value;
         formik.setFieldValue("email", email);
     };
 
-    const handlePasswordChange = (e) => {
+    const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const password = e.target.value;
         formik.setFieldValue("password", password);
     };
@@ -95,10 +95,11 @@ const LoginForm = () => {
                             className="login__input"
                             value={formik.values.email}
                             onChange={handleEmailChange}
+                            onBlur={formik.handleBlur}
                         />
                         <FaUser className="login__input-icon" />
                     </div>
-                    {formik.errors.email && (
+                    {formik.touched.email && formik.errors.email && (
                         <p className="login__message-error">
                             {formik.errors.email}
                         </p>
@@ -112,10 +113,11 @@ const LoginForm = () => {
                             className="login__input"
                             value={formik.values.password}
                             onChange={handlePasswordChange}
+                            onBlur={formik.handleBlur}
                         />
                         <FaLock className="login__input-icon" />
                     </div>
-                    {formik.errors.password && (
+                    {formik.touched.password && formik.errors.password && (
                         <p className="login__message-error">
                             {formik.errors.password}
                         </p>

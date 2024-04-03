@@ -1,19 +1,9 @@
-// export interface ILoginParams {
-//     email: string;
-//     password: string;
-//     rememberMe: boolean;
-// }
-
-// export interface ILoginValidation {
-//     email: string;
-//     password: string;
-// }
-
-export type FormData = {
+export interface ILoginFormData {
     email: string;
     password: string;
-};
+}
 
-export type ApiResponse = {
+export interface ILoginResponseData {
     token: string;
-};
+    name: string;
+}

@@ -7,11 +7,12 @@ export const loginValidation = Yup.object().shape({
             /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/,
             "Please enter a valid email address"
         ),
-    password: Yup.string().required("Password is required"),
-    // .matches(
-    //     /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,}$/,
-    //     "Minimum eight characters, at least one letter, one number and one special character"
-    // )
+    password: Yup.string()
+        .required("Password is required")
+        .matches(
+            /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,}$/,
+            "Minimum eight characters, at least one letter, one number and one special character"
+        ),
     toggle: Yup.bool().oneOf(
         [true],
         "You need to accept the terms and conditions"
@@ -25,11 +26,12 @@ export const signupValidation = Yup.object().shape({
             /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/,
             "Please enter a valid email address"
         ),
-    password: Yup.string().required("Password is required"),
-    // .matches(
-    //     /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,}$/,
-    //     "Minimum eight characters, at least one letter, one number and one special character"
-    // ),
+    password: Yup.string()
+        .required("Password is required")
+        .matches(
+            /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,}$/,
+            "Minimum eight characters, at least one letter, one number and one special character"
+        ),
     repeatPassword: Yup.string()
         .required("Required")
         .oneOf([Yup.ref("password"), null], "Password must match"),

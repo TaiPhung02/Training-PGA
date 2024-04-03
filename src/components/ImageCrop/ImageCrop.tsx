@@ -9,19 +9,24 @@ import setCanvasPreview from "../setCanvasPreview/setCanvasPreview";
 
 import { Button } from "antd";
 import "./imageCrop.css";
-import { updateAvatarApi } from "../../services/user-services";
+import { updateUser, userApi } from "../../services/user-services";
+import { ICrop } from "../../interfaces/imageCrop-interface";
+import { toast } from "react-toastify";
+import { useDispatch } from "react-redux";
+import { updateAvatar } from "../../redux/auth/authSlice";
 
 const ASPECT_RATIO = 1;
 const MIN_DIMENSION = 150;
 
-const ImageCrop = ({ updateAvatar }) => {
-    const imgRef = useRef(null);
-    const previewCanvasRef = useRef(null);
-    const [imgSrc, setImgSrc] = useState("");
-    const [crop, setCrop] = useState();
-    const [error, setError] = useState("");
+const ImageCrop = () => {
+    const dispatch = useDispatch();
+    const imgRef = useRef<HTMLImageElement>(null);
+    const previewCanvasRef = useRef<HTMLCanvasElement>(null);
+    const [imgSrc, setImgSrc] = useState<string>("");
+    const [crop, setCrop] = useState<ICrop>();
+    const [error, setError] = useState<string>("");
 
-    const onSelectFile = (e) => {
+    const onSelectFile = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (!file) return;
 
@@ -35,7 +40,8 @@ const ImageCrop = ({ updateAvatar }) => {
                 if (error) {
                     setError("");
                 }
-                const { naturalWidth, naturalHeight } = e.currentTarget;
+                const target = e.currentTarget as HTMLImageElement;
+                const { naturalWidth, naturalHeight } = target;
                 if (
                     naturalWidth < MIN_DIMENSION ||
                     naturalHeight < MIN_DIMENSION
@@ -50,7 +56,7 @@ const ImageCrop = ({ updateAvatar }) => {
         reader.readAsDataURL(file);
     };
 
-    const onImageLoad = (e) => {
+    const onImageLoad = (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
         const { width, height } = e.currentTarget;
         const cropWidthInPercent = (MIN_DIMENSION / width) * 100;
 
@@ -64,11 +70,16 @@ const ImageCrop = ({ updateAvatar }) => {
             height
         );
         const centeredCrop = centerCrop(crop, width, height);
+
         setCrop(centeredCrop);
     };
 
-    //
-    const handleCropImage = () => {
+    const handleCropImage = async () => {
+        if (!imgRef.current || !previewCanvasRef.current || !crop) {
+            toast.error("There is not enough data to process the image.");
+            return;
+        }
+
         setCanvasPreview(
             imgRef.current,
             previewCanvasRef.current,
@@ -78,18 +89,25 @@ const ImageCrop = ({ updateAvatar }) => {
                 imgRef.current.height
             )
         );
+
         const dataUrl = previewCanvasRef.current.toDataURL();
-        // updateAvatar(dataUrl);
-        const blob = dataURLToBlob(dataUrl);
 
-        const formData = new FormData();
-        formData.append("avatar", blob, "avatar.png");
+        try {
+            const blob = dataURLToBlob(dataUrl);
 
-        const response = updateAvatarApi(formData);
-        console.log(response);
+            const formData = new FormData();
+            formData.append("file", blob, "avatar.png");
+
+            await updateUser(formData);
+
+
+            toast.success("User updated successfully.");
+        } catch (error) {
+            toast.error("An error occurred while updating users");
+        }
     };
 
-    const dataURLToBlob = (dataUrl:string) => {
+    const dataURLToBlob = (dataUrl: string) => {
         const byteString = atob(dataUrl.split(",")[1]);
         const mimeType = dataUrl.split(",")[0].split(":")[1].split(";")[0];
         const ab = new ArrayBuffer(byteString.length);

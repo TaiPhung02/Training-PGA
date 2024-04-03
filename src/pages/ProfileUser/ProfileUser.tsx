@@ -2,19 +2,20 @@ import React, { useEffect, useState } from "react";
 
 import { Modal, Skeleton } from "antd";
 
-import { updateAvatarApi, userApi } from "../../services/user-services";
+import { userApi } from "../../services/user-services";
 import ImageCrop from "../../components/ImageCrop/ImageCrop";
 
 import "./profileUser.css";
 import "react-image-crop/dist/ReactCrop.css";
+import { IUserProfile } from "../../interfaces/user-interface";
 
 const ProfileUser = () => {
     //
     const [isModalOpen, setIsModalOpen] = useState(false);
-    const [userProfile, setUserProfile] = useState([]);
+    const [userProfile, setUserProfile] = useState<IUserProfile>();
     const [loading, setLoading] = useState(true);
 
-    const fetchData = async () => {
+    const fetchDataUser = async () => {
         try {
             const response = await userApi();
             setUserProfile(response.data);
@@ -26,7 +27,7 @@ const ProfileUser = () => {
 
     useEffect(() => {
         const timeout = setTimeout(() => {
-            fetchData();
+            fetchDataUser();
         }, 1000);
         return () => clearTimeout(timeout);
     }, []);
@@ -45,17 +46,6 @@ const ProfileUser = () => {
 
     const handleCancel = () => {
         setIsModalOpen(false);
-    };
-
-    const updateAvatar = async (imgData) => {
-        try {
-            const response = await updateAvatarApi(imgData);
-            console.log("Response from API:", response.data);
-
-            // setIsModalOpen(false);
-        } catch (error) {
-            console.error("Error updating avatar:", error);
-        }
     };
 
     return (
@@ -81,8 +71,9 @@ const ProfileUser = () => {
                             open={isModalOpen}
                             onOk={handleOk}
                             onCancel={handleCancel}
+                            footer
                         >
-                            <ImageCrop updateAvatar={updateAvatar}></ImageCrop>
+                            <ImageCrop></ImageCrop>
                         </Modal>
                     </div>
                     <div className="profileUser__content">

@@ -50,10 +50,13 @@ const authSlice = createSlice({
             state.isAuthenticated = false;
             state.user = null;
         },
+        updateAvatar(state, action) {
+            state.user = action.payload;
+        },
     },
 });
 
-export const { loginStart, loginSuccess, loginFail, logout } =
+export const { loginStart, loginSuccess, loginFail, logout, updateAvatar } =
     authSlice.actions;
 
 export default authSlice.reducer;

@@ -1,7 +1,9 @@
+import { IPixelCrop } from "../../interfaces/setCanvas-interface";
+
 const setCanvasPreview = (
-    image, // HTMLImageElement
-    canvas, // HTMLCanvasElement
-    crop // PixelCrop
+    image: HTMLImageElement,
+    canvas: HTMLCanvasElement,
+    crop: IPixelCrop
 ) => {
     const ctx = canvas.getContext("2d");
     if (!ctx) {
