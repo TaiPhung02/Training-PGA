@@ -48,7 +48,7 @@ const Navbar = () => {
                 <a onClick={(e) => e.preventDefault()}>
                     <Space>
                         {/* <h2>Hello, {localStorage.getItem("name")}</h2> */}
-                        <h2>Hello, {user.name}</h2>
+                        {/* <h2>Hello, {user.name}</h2> */}
                         <DownOutlined />
                     </Space>
                 </a>
